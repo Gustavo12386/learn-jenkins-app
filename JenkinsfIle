@@ -22,6 +22,25 @@ pipeline {
         }
 
         stage('Test'){
+            parallel{
+               stage('Unit tests'){
+                agent{
+                    docker{
+                        image: 'node:18-alpine'
+                        reuseNode true
+                    }  
+                }
+                steps {
+                    sh '''
+                    test -f build/index.html
+                    npm test
+                    '''   
+                }
+              }  
+            }
+           
+        }
+         stage('Deploy') {
             agent{
               docker{
                 image: 'node:18-alpine'
@@ -30,9 +49,9 @@ pipeline {
             }
             steps {
                 sh '''
-                   test -f build/index.html
-                   npm test
-                '''   
+                   npm install netlify-cli -g
+                   netlify --version
+                '''
             }
         }
     }
